@@ -9,7 +9,7 @@
 
 ---
 
-## Setup Instructions
+## Setup
 
 ### 1. Configure Database
 Edit `includes/config.php`:
