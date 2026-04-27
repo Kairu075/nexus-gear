@@ -11,9 +11,6 @@
 
 ## Setup Instructions
 
-```
-
-
 ### 1. Configure Database
 Edit `includes/config.php`:
 ```php
@@ -24,14 +21,8 @@ define('DB_NAME', 'nexus_gear');
 define('SITE_URL', 'http://localhost/nexus-gear');
 ```
 
-### 5. Set Permissions
-```bash
-chmod 755 uploads/
-chmod 755 uploads/products/
-chmod 755 uploads/avatars/
-```
 
-### 8. Access the Store
+### 2. Access the Store
 - **Storefront**: http://localhost/nexus-gear/
 - **Admin Panel**: http://localhost/nexus-gear/admin/
 
@@ -122,12 +113,4 @@ nexus-gear/
 | SAVE500 | Fixed | ₱500 | ₱5,000 |
 | WELCOME | % | 15% | ₱0 |
 
----
-
-## Customization Tips
-- **Colors**: Edit CSS variables in `css/main.css` (`:root` block)
-- **Hero Video**: Replace `videos/hero-montage.mp4`
-- **Logo**: Replace `images/logo.png`
-- **Brand logos**: Add PNG files to `images/brands/{slug}.png`
-- **Category icons**: Add PNG files to `images/categories/{slug}.png`
-- **Product images**: Upload via Admin → Products → Edit → Upload Images
+# © 2026 Nexus Gear | Developed by Kyle Dominic Yap
