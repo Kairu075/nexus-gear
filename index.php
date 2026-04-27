@@ -106,7 +106,7 @@ $pageTitle = 'Nexus Gear';
       <source src="/nexus-gear/videos/hero-montage.mp4" type="video/mp4">
     </video>
   </div>
-  <div class="hero-grid"></div>
+ 
   <div class="hero-glow hero-glow-1"></div>
   <div class="hero-glow hero-glow-2"></div>
 
@@ -119,7 +119,7 @@ $pageTitle = 'Nexus Gear';
         <span class="accent-orange">Gear Up<br>Level Up</span>
       </h1>
       <p class="hero-subtitle">
-        Premium smartphones, laptops, gaming gear &amp;<br> PC components at very low prices.
+        Premium smartphones, laptops, gaming gear &amp;<br> PC components at a very low prices.
       </p>
       <div class="hero-actions">
         <a href="/nexus-gear/shop.php" class="btn btn-primary btn-lg">
@@ -395,7 +395,10 @@ $pageTitle = 'Nexus Gear';
       </div>
     </div>
     <div class="footer-bottom">
-      <span>&copy; <?= date('Y') ?> Nexus Gear. All rights reserved.</span>
+      <span>&copy; <?= date('Y') ?> Nexus Gear — Created by Kyle Dominic Yap.<br>
+    Disclaimer: This website is a sample project for educational and portfolio purposes only.<br>
+     It does not sell real products and has no affiliation, partnership, or endorsement with any brands, companies, or trademarks featured.
+</span>
       <span>Powered by <span style="color:var(--red)">Nexus Tech</span></span>
     </div>
   </div>
