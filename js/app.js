@@ -138,51 +138,114 @@ function initHeader() {
   onScroll();
 }
 
-// ── Search ──
+// ── Search — icon toggle ──
 function initSearch() {
-  const input   = document.getElementById('searchInput');
-  const results = document.getElementById('searchResults');
-  if (!input || !results) return;
+  const toggleBtn = document.getElementById('searchToggleBtn');
+  const panel     = document.getElementById('searchPanel');
+  const input     = document.getElementById('searchInput');         // desktop bar
+  const mobileIn  = document.getElementById('mobileSearchPanelInput'); // mobile panel
+  const mobileInputRow = document.getElementById('mobilePanelInput');
+  const results   = document.getElementById('searchResults');
 
-  input.addEventListener('input', () => {
-    clearTimeout(state.searchTimer);
-    const q = input.value.trim();
-    if (!q) { results.classList.add('hidden'); return; }
-    state.searchTimer = setTimeout(() => performSearch(q), 280);
-  });
+  // Desktop input — open panel on focus/type
+  if (input) {
+    input.addEventListener('focus', () => panel?.classList.add('open'));
+    input.addEventListener('input', () => {
+      clearTimeout(state.searchTimer);
+      const q = input.value.trim();
+      if (!q) { if(results) results.innerHTML=''; panel?.classList.remove('open'); return; }
+      panel?.classList.add('open');
+      state.searchTimer = setTimeout(() => performSearch(q, results), 280);
+    });
+    input.addEventListener('keydown', e => {
+      if (e.key === 'Enter') {
+        panel?.classList.remove('open');
+        window.location.href = `/nexus-gear/shop.php?q=${encodeURIComponent(input.value.trim())}`;
+      }
+      if (e.key === 'Escape') panel?.classList.remove('open');
+    });
+  }
+
+  // Mobile icon toggle — show panel + inner input
+  if (toggleBtn && panel) {
+    toggleBtn.addEventListener('click', e => {
+      e.stopPropagation();
+      const isOpen = panel.classList.toggle('open');
+      if (mobileInputRow) mobileInputRow.style.display = isOpen ? 'flex' : 'none';
+      if (isOpen) mobileIn?.focus();
+    });
+  }
+
+  // Mobile panel input
+  if (mobileIn) {
+    mobileIn.addEventListener('input', () => {
+      clearTimeout(state.searchTimer);
+      const q = mobileIn.value.trim();
+      if (!q) { if(results) results.innerHTML=''; return; }
+      state.searchTimer = setTimeout(() => performSearch(q, results), 280);
+    });
+    mobileIn.addEventListener('keydown', e => {
+      if (e.key === 'Enter') {
+        panel?.classList.remove('open');
+        window.location.href = `/nexus-gear/shop.php?q=${encodeURIComponent(mobileIn.value.trim())}`;
+      }
+    });
+  }
+
+  // Click outside closes panel
   document.addEventListener('click', e => {
-    if (!input.contains(e.target) && !results.contains(e.target))
-      results.classList.add('hidden');
-  });
-  input.addEventListener('keydown', e => {
-    if (e.key === 'Enter') {
-      results.classList.add('hidden');
-      window.location.href = `/nexus-gear/shop.php?q=${encodeURIComponent(input.value.trim())}`;
+    if (e.target.closest('.search-result-item')) return;
+    if (!panel?.contains(e.target) && e.target !== toggleBtn && !toggleBtn?.contains(e.target) && e.target !== input) {
+      panel?.classList.remove('open');
     }
   });
+
+  // Mobile search bar (in mobile nav drawer — keep as-is)
+  const mobileInput   = document.getElementById('mobileSearchInput');
+  const mobileResults = document.getElementById('mobileSearchResults');
+  if (mobileInput) {
+    mobileInput.addEventListener('input', () => {
+      clearTimeout(state.searchTimer);
+      const q = mobileInput.value.trim();
+      if (!q) { if(mobileResults) mobileResults.innerHTML=''; return; }
+      state.searchTimer = setTimeout(() => performSearch(q, mobileResults, true), 280);
+    });
+    mobileInput.addEventListener('keydown', e => {
+      if (e.key === 'Enter')
+        window.location.href = `/nexus-gear/shop.php?q=${encodeURIComponent(mobileInput.value.trim())}`;
+    });
+  }
 }
 
-async function performSearch(q) {
-  const results = document.getElementById('searchResults');
-  results.innerHTML = '<div style="padding:20px;text-align:center"><div class="spinner" style="width:22px;height:22px;border-width:2px"></div></div>';
-  results.classList.remove('hidden');
-  const data = await fetch(`${API}?action=search_products&q=${encodeURIComponent(q)}`, { credentials: 'include' }).then(r => r.json());
-  if (!data.products?.length) {
-    results.innerHTML = '<div style="padding:20px;text-align:center;font-size:13px;color:var(--text-on-dark-dim)">No products found</div>';
-    return;
+async function performSearch(q, resultsEl, isMobile = false) {
+  if (!resultsEl) return;
+  // Remove hidden class — it's inside the dark panel so always show
+  resultsEl.classList.remove('hidden');
+  resultsEl.innerHTML = '<div style="padding:12px 10px;text-align:center"><div class="spinner" style="width:20px;height:20px;border-width:2px;margin:0 auto"></div></div>';
+
+  try {
+    const data = await fetch(`${API}?action=search_products&q=${encodeURIComponent(q)}`, { credentials: 'include' }).then(r => r.json());
+
+    if (!data.products?.length) {
+      resultsEl.innerHTML = '<div style="padding:14px 10px;text-align:center;font-size:13px;color:rgba(240,240,248,0.4)">No products found</div>';
+      return;
+    }
+
+    resultsEl.innerHTML = data.products.slice(0, 6).map(p => {
+      const img = p.primary_image ? UPLOAD + 'products/' + p.primary_image : '/nexus-gear/images/no-image.png';
+      return `<a href="/nexus-gear/product.php?slug=${p.slug}" class="search-result-item" style="text-decoration:none">
+        <img src="${img}" alt="${p.name}" onerror="this.src='/nexus-gear/images/no-image.png'">
+        <div style="min-width:0">
+          <div class="search-result-name" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px">${p.name}</div>
+          <div class="search-result-price">${formatPrice(p.price)}</div>
+        </div>
+      </a>`;
+    }).join('') + (data.products.length > 6
+      ? `<a href="/nexus-gear/shop.php?q=${encodeURIComponent(q)}" style="display:block;text-align:center;padding:10px;font-size:12px;color:var(--red);text-decoration:none;border-top:1px solid rgba(255,255,255,0.07);margin-top:4px">See all results →</a>`
+      : '');
+  } catch(e) {
+    resultsEl.innerHTML = '<div style="padding:14px;text-align:center;font-size:13px;color:rgba(240,240,248,0.4)">Search failed. Try again.</div>';
   }
-  results.innerHTML = data.products.slice(0, 6).map(p => {
-    const img = p.primary_image ? UPLOAD + 'products/' + p.primary_image : '/nexus-gear/images/no-image.png';
-    return `<a href="/nexus-gear/product.php?slug=${p.slug}" class="search-result-item">
-      <img src="${img}" alt="${p.name}" onerror="this.src='/nexus-gear/images/no-image.png'">
-      <div>
-        <div class="search-result-name">${p.name}</div>
-        <div class="search-result-price">${formatPrice(p.price)}</div>
-      </div>
-    </a>`;
-  }).join('') + (data.products.length > 6
-    ? `<a href="/nexus-gear/shop.php?q=${encodeURIComponent(q)}" style="display:block;text-align:center;padding:10px;font-size:12px;color:var(--red)">See all results →</a>`
-    : '');
 }
 
 // ── Cart ──
@@ -444,31 +507,25 @@ window.placeBuyNowOrder = async function(productId, unitPrice) {
   const btn = document.querySelector('#buyNowModal .btn-primary');
   if (btn) { btn.disabled = true; btn.textContent = 'Placing Order…'; }
 
-  // Add to cart silently first, then place order, then clear cart
-  const addRes = await apiCall('add_to_cart', { product_id: productId, quantity: qty }, 'POST');
-  if (!addRes.success) {
-    toast(addRes.message || 'Could not add item.', 'error');
-    if (btn) { btn.disabled = false; btn.textContent = 'Confirm Order'; }
-    return;
-  }
-
   const fd = new FormData();
+  fd.append('product_id',        productId);
+  fd.append('quantity',          qty);
   fd.append('shipping_name',     name);
   fd.append('shipping_phone',    phone);
   fd.append('shipping_address',  address);
   fd.append('shipping_city',     city);
   fd.append('shipping_province', province);
-  fd.append('shipping_zip',      zip);
+  fd.append('shipping_zip',      zip || '');
   fd.append('payment_method',    payment);
-  fd.append('notes',             notes);
+  fd.append('notes',             notes || '');
 
-  const orderRes = await apiCall('place_order', fd, 'POST');
+  const orderRes = await apiCall('place_order_buynow', fd, 'POST');
   if (btn) { btn.disabled = false; btn.textContent = 'Confirm Order'; }
 
   if (orderRes.success) {
     closeModal('buyNowModal');
     openOrderSuccessModal(orderRes.order_number);
-    loadCart();
+    loadCart();          // cart is untouched — just refresh count display
   } else {
     toast(orderRes.message || 'Order failed. Please try again.', 'error');
   }
@@ -771,6 +828,56 @@ document.addEventListener('DOMContentLoaded', () => {
   initSearch();
   initCart();
   initHeader();
+  // ── Hamburger menu ──
+  const hamburgerBtn = document.getElementById('hamburgerBtn');
+  const mobileNav    = document.getElementById('mobileNav');
+
+  window.closeMenu = function() {
+    hamburgerBtn?.classList.remove('open');
+    mobileNav?.classList.remove('open');
+    document.body.style.overflow = '';
+  };
+
+  if (hamburgerBtn && mobileNav) {
+    hamburgerBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isOpen = mobileNav.classList.toggle('open');
+      hamburgerBtn.classList.toggle('open', isOpen);
+      document.body.style.overflow = isOpen ? 'hidden' : '';
+    });
+    // Close when clicking outside
+    document.addEventListener('click', (e) => {
+      if (mobileNav.classList.contains('open') &&
+          !mobileNav.contains(e.target) &&
+          e.target !== hamburgerBtn &&
+          !hamburgerBtn.contains(e.target)) {
+        window.closeMenu();
+      }
+    });
+  }
+
+  // Sync mobile nav auth state (runs after checkAuth completes)
+  function syncMobileNav() {
+    const mobileAuth  = document.getElementById('mobileAuthLinks');
+    const mobileUser  = document.getElementById('mobileUserLinks');
+    const mobileAdmin = document.querySelector('.mobile-admin-link');
+    if (state.user) {
+      mobileAuth?.classList.add('hidden');
+      if (mobileUser) { mobileUser.classList.remove('hidden'); mobileUser.style.display = 'flex'; }
+      if (mobileAdmin) mobileAdmin.classList.toggle('hidden', state.user.role !== 'admin');
+    } else {
+      mobileAuth?.classList.remove('hidden');
+      if (mobileUser) { mobileUser.classList.add('hidden'); mobileUser.style.display = 'none'; }
+    }
+  }
+
+  // Patch checkAuth to also sync mobile nav after it completes
+  const _origCheckAuth = checkAuth;
+  window.checkAuth = async function() {
+    await _origCheckAuth();
+    syncMobileNav();
+  };
+
   if (document.getElementById('heroSection')) initHomePage();
 });
 

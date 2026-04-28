@@ -10,6 +10,18 @@ $pageTitle = 'Nexus Gear';
 <title><?= $pageTitle ?></title>
 <link rel="icon" href="/nexus-gear/images/logo.png">
 <link rel="stylesheet" href="/nexus-gear/css/main.css">
+<style>
+/* Show hamburger + hide desktop nav links on mobile */
+@media (max-width:900px) {
+  .hamburger { display:flex !important; }
+  .mobile-nav { display:flex; }
+  #authBtns { display:none !important; }
+}
+@media (min-width:901px) {
+  .mobile-nav { display:none !important; }
+  .hamburger { display:none !important; }
+}
+</style>
 </head>
 <body>
 
@@ -18,14 +30,15 @@ $pageTitle = 'Nexus Gear';
   <nav class="nav-wrap">
     <a href="/nexus-gear/index.php" class="logo">
       <img src="/nexus-gear/images/logo.png" alt="Nexus Gear" onerror="this.style.display='none'">
-      <span class="footer-logo-text"><span class="logo-accent">NEXUS</span> GEAR</span>
+      <span class="logo-text"><span class="logo-accent">NEXUS</span> GEAR</span>
     </a>
 
+    <!-- Desktop nav links (hidden on mobile) -->
     <ul class="nav-links">
       <li><a href="/nexus-gear/index.php" class="active">Home</a></li>
       <li class="nav-dropdown">
         <a href="/nexus-gear/shop.php">Shop</a>
-        <div class="dropdown-menu" id="categoriesDropdown">
+        <div class="dropdown-menu">
           <a href="/nexus-gear/shop.php?category=smartphones">Smartphones</a>
           <a href="/nexus-gear/shop.php?category=laptops">Laptops</a>
           <a href="/nexus-gear/shop.php?category=desktop-pcs">Desktop PCs</a>
@@ -41,25 +54,41 @@ $pageTitle = 'Nexus Gear';
       <li><a href="/nexus-gear/shop.php?sale=1">Sale</a></li>
     </ul>
 
-    <div class="search-wrapper">
-      <svg class="search-icon" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-      <input type="text" id="searchInput" class="search-input" placeholder="Search phones, laptops, gear...">
-      <div id="searchResults" class="search-results hidden"></div>
-    </div>
-
     <div class="nav-actions">
+      <!-- Search icon → expands panel -->
+<div class="search-wrapper">
+  <!-- Desktop: always-visible bar -->
+  <div class="search-bar-desktop">
+    <svg class="search-icon" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input id="searchInput" placeholder="Search products, brands...">
+  </div>
+  <!-- Mobile: icon toggle -->
+  <button class="search-icon-btn" id="searchToggleBtn">
+    <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+  </button>
+  <!-- Shared dropdown results -->
+  <div class="search-panel" id="searchPanel">
+    <!-- Mobile only: input inside panel -->
+    <div class="search-panel-inner" style="display:none" id="mobilePanelInput">
+      <svg class="search-icon" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input class="search-input" id="mobileSearchPanelInput" placeholder="Search products...">
+    </div>
+    <div class="search-results" id="searchResults"></div>
+  </div>
+</div>
+
       <!-- Wishlist -->
-      <button class="nav-icon-btn" onclick="window.location='/nexus-gear/wishlist.php'" id="wishlistBtn" title="Wishlist">
+      <button type="button" class="nav-icon-btn" onclick="window.location='/nexus-gear/wishlist.php'" id="wishlistBtn" title="Wishlist">
         <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
       </button>
 
       <!-- Cart -->
-      <button class="nav-icon-btn" id="cartBtn" title="Cart">
+      <button type="button" class="nav-icon-btn" id="cartBtn" title="Cart">
         <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
         <span class="badge hidden" id="cartBadge">0</span>
       </button>
 
-      <!-- Auth Buttons -->
+      <!-- Auth Buttons (desktop) -->
       <div id="authBtns" class="flex gap-2">
         <button class="btn btn-outline btn-sm" data-open-auth="login">Sign In</button>
         <button class="btn btn-primary btn-sm" data-open-auth="register">Join Now</button>
@@ -73,30 +102,51 @@ $pageTitle = 'Nexus Gear';
             <div class="user-dropdown-name"></div>
             <div class="user-dropdown-email"></div>
           </div>
-          <a href="/nexus-gear/profile.php">
-            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-            My Profile
-          </a>
-          <a href="/nexus-gear/orders.php">
-            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
-            My Orders
-          </a>
-          <a href="/nexus-gear/wishlist.php">
-            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-            Wishlist
-          </a>
-          <a href="/nexus-gear/admin/index.php" class="admin-link hidden">
-            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-            Admin Panel
-          </a>
-          <button class="logout-btn">
-            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-            Sign Out
-          </button>
+          <a href="/nexus-gear/profile.php"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> My Profile</a>
+          <a href="/nexus-gear/orders.php"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg> My Orders</a>
+          <a href="/nexus-gear/wishlist.php"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> Wishlist</a>
+          <a href="/nexus-gear/admin/index.php" class="admin-link hidden"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg> Admin Panel</a>
+          <button class="logout-btn"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg> Sign Out</button>
         </div>
       </div>
+
+      <!-- Hamburger (mobile only) -->
+      <button type="button" class="hamburger" id="hamburgerBtn" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
     </div>
   </nav>
+
+  <!-- Mobile nav drawer -->
+  <div class="mobile-nav" id="mobileNav">
+    <div class="mobile-search">
+      <svg width="16" height="16" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input type="text" id="mobileSearchInput" placeholder="Search products..." autocomplete="off">
+    </div>
+    <div id="mobileSearchResults"></div>
+    <div class="mobile-nav-section">Navigation</div>
+    <a href="/nexus-gear/index.php">Home</a>
+    <a href="/nexus-gear/shop.php">All Products</a>
+    <a href="/nexus-gear/shop.php?category=smartphones">Smartphones</a>
+    <a href="/nexus-gear/shop.php?category=laptops">Laptops</a>
+    <a href="/nexus-gear/shop.php?category=desktop-pcs">Desktop PCs</a>
+    <a href="/nexus-gear/shop.php?category=gaming-peripherals">Gaming</a>
+    <a href="/nexus-gear/shop.php?category=pc-parts">PC Parts</a>
+    <a href="/nexus-gear/shop.php?sort=popular">Best Sellers</a>
+    <a href="/nexus-gear/shop.php?sale=1">Sale</a>
+    <div class="mobile-nav-section" id="mobileAuthSection">Account</div>
+    <div id="mobileAuthLinks">
+      <button class="btn btn-primary" style="width:100%;justify-content:center;margin:8px 0" data-open-auth="login" onclick="closeMenu()">Sign In</button>
+      <button class="btn btn-outline" style="width:100%;justify-content:center;border-color:rgba(255,255,255,.2);color:#fff" data-open-auth="register" onclick="closeMenu()">Create Account</button>
+    </div>
+    <div id="mobileUserLinks" class="hidden" style="display:flex;flex-direction:column;gap:0">
+      <a href="/nexus-gear/profile.php" onclick="closeMenu()">My Profile</a>
+      <a href="/nexus-gear/orders.php" onclick="closeMenu()">My Orders</a>
+      <a href="/nexus-gear/wishlist.php" onclick="closeMenu()">Wishlist</a>
+      <a href="/nexus-gear/admin/index.php" class="mobile-admin-link hidden" onclick="closeMenu()">Admin Panel</a>
+      <button class="logout-btn" style="padding:14px 16px;border-radius:10px;font-size:16px;font-weight:600;color:#ff6677;border-bottom:1px solid var(--border-nav)" onclick="closeMenu()">Sign Out</button>
+    </div>
+  </div>
 </header>
 
 <!-- ============ HERO ============ -->
@@ -112,14 +162,17 @@ $pageTitle = 'Nexus Gear';
 
   <div class="hero-content">
     <div class="hero-text">
+      <br>
+      <div class="hero-badge">NEW ARRIVALS 2026</div>
+      <br>
       <h1 class="hero-title">
-        <br>
-        <span class="accent">NEXUS</span>
-        GEAR<br>
-        <span class="accent-orange">Gear Up<br>Level Up</span>
+        <span class="accent">NEXUS</span> GEAR
       </h1>
+      <p class="hero-subtitle" style="font-size:clamp(1.1rem,2.5vw,1.5rem);font-weight:600;color:rgba(255, 162, 0, 0.75);margin-bottom:12px">
+        TECH THAT MOVES WITH YOU.
+      </p>
       <p class="hero-subtitle">
-        Premium smartphones, laptops, gaming gear &amp;<br> PC components at a very low prices.
+        Premium smartphones, laptops, gaming gear &amp; PC components at unbeatable prices.
       </p>
       <div class="hero-actions">
         <a href="/nexus-gear/shop.php" class="btn btn-primary btn-lg">

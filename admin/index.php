@@ -18,6 +18,9 @@ if (!isAdmin()) { header('Location: /nexus-gear/index.php'); exit; }
 .low-stock-item{display:flex;align-items:center;gap:12px;padding:12px;background:rgba(232,25,44,0.04);border:1px solid rgba(232,25,44,0.14);border-radius:var(--radius);margin-bottom:8px}
 .admin-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:24px}
 .product-img-grid-wrap{display:flex;flex-wrap:wrap;gap:12px;min-height:40px;align-items:flex-start}
+@media (max-width:1024px) {
+  #adminMenuToggle { display:flex !important; }
+}
 </style>
 </head>
 <body>
@@ -89,7 +92,12 @@ if (!isAdmin()) { header('Location: /nexus-gear/index.php'); exit; }
   <!-- Main content -->
   <main class="admin-main">
     <div class="admin-topbar">
-      <div class="admin-page-title" id="adminPageTitle">DASHBOARD</div>
+      <div style="display:flex;align-items:center;gap:12px">
+        <button type="button" class="admin-menu-toggle" id="adminMenuToggle" style="display:none">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
+        <div class="admin-page-title" id="adminPageTitle">DASHBOARD</div>
+      </div>
       <div style="display:flex;align-items:center;gap:12px">
         <div style="font-size:13px;color:var(--text-secondary)">Welcome, <span style="color:var(--red)"><?= htmlspecialchars($_SESSION['user_name'] ?? 'Admin') ?></span></div>
       </div>
@@ -931,6 +939,24 @@ document.addEventListener('DOMContentLoaded', ()=>{
     await apiCall('logout',{},'POST');
     window.location='/nexus-gear/index.php';
   }));
+
+  // Admin sidebar toggle
+  const adminToggle  = document.getElementById('adminMenuToggle');
+  const adminSidebar = document.querySelector('.admin-sidebar');
+
+  if (adminToggle && adminSidebar) {
+    adminToggle.addEventListener('click', e => {
+      e.stopPropagation();
+      adminSidebar.classList.toggle('open');
+    });
+    document.addEventListener('click', e => {
+      if (adminSidebar.classList.contains('open') &&
+          !adminSidebar.contains(e.target) &&
+          e.target !== adminToggle) {
+        adminSidebar.classList.remove('open');
+      }
+    });
+  }
 });
 </script>
 </body></html>

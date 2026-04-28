@@ -7,29 +7,92 @@
 <link rel="icon" href="/nexus-gear/images/logo.png">
 <link rel="stylesheet" href="/nexus-gear/css/main.css">
 <style>
-.shop-layout{display:grid;grid-template-columns:260px 1fr;gap:32px;align-items:start}
-.filter-sidebar{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:24px;position:sticky;top:90px}
-.filter-section{margin-bottom:28px;padding-bottom:28px;border-bottom:1px solid var(--border)}
-.filter-section:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
-.filter-title{font-family:'Syne',sans-serif;font-size:10px;letter-spacing:2px;color:var(--red);margin-bottom:14px}
-.filter-option{display:flex;align-items:center;gap:10px;padding:6px 0;cursor:pointer}
-.filter-option input[type=checkbox]{width:16px;height:16px;accent-color:var(--red);cursor:pointer}
-.filter-option label{font-size:13px;color:var(--text-secondary);cursor:pointer;flex:1}
-.filter-option label:hover{color:var(--text-primary)}
-.filter-count{font-size:11px;color:var(--text-dim)}
-.price-range{display:flex;gap:10px;align-items:center}
-.price-input{width:100%;padding:8px 12px;background:var(--bg-card2);border:1px solid var(--border);border-radius:8px;color:var(--text-primary);font-size:13px;outline:none}
-.price-input:focus{border-color:var(--red)}
-.shop-toolbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;padding:16px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius)}
-.sort-select{background:var(--bg-card2);border:1px solid var(--border);border-radius:8px;color:var(--text-primary);padding:8px 12px;font-size:13px;outline:none;cursor:pointer}
-.results-count{font-size:13px;color:var(--text-dim)}
-.results-count span{color:var(--red);font-weight:700}
-.pagination{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:40px}
-.page-btn{width:38px;height:38px;border-radius:8px;background:var(--bg-card);border:1px solid var(--border);color:var(--text-secondary);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;transition:var(--transition);font-family:'Syne',sans-serif}
-.page-btn:hover,.page-btn.active{background:var(--red-dim);border-color:var(--red);color:var(--red)}
-.active-filters{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px}
-.filter-tag{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;background:var(--red-dim);border:1px solid var(--border-med);border-radius:50px;font-size:12px;color:var(--red)}
-.filter-tag button{background:none;border:none;color:var(--red);cursor:pointer;font-size:14px;line-height:1;padding:0}
+/* ── Shop page layout ── */
+.shop-layout { display:grid; grid-template-columns:260px 1fr; gap:28px; align-items:start; }
+
+/* Filter sidebar */
+.filter-sidebar {
+  background:var(--bg-white); border:1px solid var(--border);
+  border-radius:var(--radius-lg); padding:22px; position:sticky; top:80px;
+  box-shadow:var(--shadow-sm);
+}
+.filter-section { margin-bottom:24px; padding-bottom:24px; border-bottom:1px solid var(--border); }
+.filter-section:last-child { border-bottom:none; margin-bottom:0; padding-bottom:0; }
+.filter-title { font-size:11px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--red); margin-bottom:12px; }
+.filter-option { display:flex; align-items:center; gap:9px; padding:5px 0; cursor:pointer; }
+.filter-option input[type=checkbox], .filter-option input[type=radio] { width:15px; height:15px; accent-color:var(--red); cursor:pointer; }
+.filter-option label { font-size:13px; color:var(--text-secondary); cursor:pointer; flex:1; }
+.filter-option label:hover { color:var(--text-primary); }
+.filter-count { font-size:11px; color:var(--text-dim); }
+.price-range { display:flex; gap:8px; align-items:center; }
+.price-input { width:100%; padding:8px 10px; background:var(--bg-card2); border:1.5px solid var(--border-med); border-radius:8px; color:var(--text-primary); font-size:13px; outline:none; }
+.price-input:focus { border-color:var(--red); }
+.shop-toolbar { display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; padding:14px 18px; background:var(--bg-white); border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow-sm); }
+.sort-select { background:var(--bg-card2); border:1px solid var(--border-med); border-radius:8px; color:var(--text-primary); padding:7px 12px; font-size:13px; outline:none; cursor:pointer; }
+.results-count { font-size:13px; color:var(--text-secondary); }
+.results-count span { color:var(--text-primary); font-weight:700; }
+.pagination { display:flex; align-items:center; justify-content:center; gap:6px; margin-top:40px; }
+.page-btn { width:36px; height:36px; border-radius:8px; background:var(--bg-white); border:1px solid var(--border); color:var(--text-secondary); cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; transition:var(--transition); }
+.page-btn:hover, .page-btn.active { background:var(--red); border-color:var(--red); color:#fff; }
+.active-filters { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:16px; }
+.filter-tag { display:inline-flex; align-items:center; gap:5px; padding:4px 10px; background:var(--red-dim); border:1px solid rgba(232,25,44,.20); border-radius:5px; font-size:12px; font-weight:700; color:var(--red); }
+.filter-tag button { background:none; border:none; color:var(--red); cursor:pointer; font-size:13px; line-height:1; }
+
+/* ── Shop product grid — always proper grid (never flex scroll) ── */
+#shopProducts {
+  display:grid !important;
+  grid-template-columns:repeat(3, 1fr) !important;
+  gap:18px !important;
+  overflow:visible !important;
+  flex-wrap:unset !important;
+}
+#shopProducts .product-card {
+  flex:unset !important;
+  width:auto !important;
+  min-width:0 !important;
+}
+
+/* ── Mobile filter toggle ── */
+.filter-toggle-btn {
+  display:none;
+  width:100%; padding:12px 16px;
+  background:var(--bg-white); border:1px solid var(--border);
+  border-radius:var(--radius-lg); cursor:pointer;
+  font-family:'Plus Jakarta Sans',sans-serif; font-weight:700; font-size:14px;
+  color:var(--text-primary); text-align:left;
+  margin-bottom:16px; box-shadow:var(--shadow-sm);
+  align-items:center; justify-content:space-between;
+}
+.filter-toggle-btn svg { color:var(--red); }
+
+@media (max-width:900px) {
+  .shop-layout { grid-template-columns:1fr; }
+
+  .filter-toggle-btn { display:flex; }
+
+  .filter-sidebar {
+    position:static;
+    display:none; /* hidden by default on mobile */
+    margin-bottom:16px;
+  }
+  .filter-sidebar.mobile-open { display:block; }
+
+  #shopProducts {
+    grid-template-columns:repeat(2, 1fr) !important;
+    gap:12px !important;
+  }
+}
+
+@media (max-width:480px) {
+  #shopProducts {
+    grid-template-columns:repeat(2, 1fr) !important;
+    gap:10px !important;
+  }
+  #shopProducts .product-card .product-name { font-size:13px; }
+  #shopProducts .product-card .price-current { font-size:14px; }
+  #shopProducts .product-card .btn-add-cart,
+  #shopProducts .product-card .btn-buy-now { font-size:10px; padding:6px 4px; }
+}
 </style>
 </head>
 <body>
@@ -50,9 +113,19 @@
 </div>
 
 <div class="container" style="padding-top:40px;padding-bottom:80px">
+
+  <!-- Mobile filter toggle -->
+  <button type="button" class="filter-toggle-btn" id="filterToggleBtn" onclick="toggleMobileFilters()">
+    <span>
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align:middle;margin-right:8px"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+      Filters
+    </span>
+    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" id="filterArrow"><polyline points="6 9 12 15 18 9"/></svg>
+  </button>
+
   <div class="shop-layout">
     <!-- Filters -->
-    <aside class="filter-sidebar">
+    <aside class="filter-sidebar" id="filterSidebar">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
         <span style="font-family:'Syne',sans-serif;font-size:12px;letter-spacing:1px">FILTERS</span>
         <button onclick="clearAllFilters()" class="btn btn-ghost btn-sm" style="font-size:11px">Clear All</button>
@@ -145,8 +218,8 @@
 
       <div class="pagination" id="pagination"></div>
     </div>
-  </div>
-</div>
+  </div><!-- end shop-layout -->
+</div><!-- end container -->
 
 <?php include __DIR__ . '/includes/footer-common.php'; ?>
 
@@ -281,5 +354,13 @@ document.addEventListener('DOMContentLoaded',()=>{
   loadProducts();
   updateActiveFilters();
 });
+
+function toggleMobileFilters() {
+  const sidebar = document.getElementById('filterSidebar');
+  const arrow   = document.getElementById('filterArrow');
+  const isOpen  = sidebar.classList.toggle('mobile-open');
+  if (arrow) arrow.style.transform = isOpen ? 'rotate(180deg)' : '';
+}
 </script>
+
 </body></html>

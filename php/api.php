@@ -35,6 +35,7 @@ switch ($action) {
     // CHECKOUT
     case 'apply_discount': handleApplyDiscount(); break;
     case 'place_order': handlePlaceOrder(); break;
+    case 'place_order_buynow': handlePlaceOrderBuyNow(); break;
     case 'get_orders': handleGetOrders(); break;
     case 'get_order': handleGetOrder(); break;
 
@@ -153,44 +154,74 @@ function handleCheckAuth() {
 // ===================== PRODUCTS =====================
 function handleGetProducts() {
     $pdo = getDB();
-    $category = $_GET['category'] ?? '';
-    $brand = $_GET['brand'] ?? '';
-    $sort = $_GET['sort'] ?? 'newest';
-    $page = max(1, intval($_GET['page'] ?? 1));
-    $limit = intval($_GET['limit'] ?? 12);
-    $offset = ($page - 1) * $limit;
+    $category  = $_GET['category']   ?? '';
+    $brand     = $_GET['brand']      ?? '';
+    $sort      = $_GET['sort']       ?? 'newest';
+    $page      = max(1, intval($_GET['page']  ?? 1));
+    $limit     = intval($_GET['limit'] ?? 12);
+    $offset    = ($page - 1) * $limit;
+    $q         = trim($_GET['q']         ?? '');
+    $price_min = floatval($_GET['price_min'] ?? 0);
+    $price_max = floatval($_GET['price_max'] ?? 0);
+    $min_rating= floatval($_GET['min_rating'] ?? 0);
+    $in_stock  = isset($_GET['in_stock'])  && $_GET['in_stock']  == '1';
+    $on_sale   = isset($_GET['sale'])      && $_GET['sale']      == '1';
+    $featured  = isset($_GET['is_featured'])&& $_GET['is_featured']== '1';
 
-    $where = ["p.is_active = 1"];
+    $where  = ["p.is_active = 1"];
     $params = [];
 
-    if ($category) { $where[] = "c.slug = ?"; $params[] = $category; }
-    if ($brand) { $where[] = "b.slug = ?"; $params[] = $brand; }
+    if ($category) { $where[] = "c.slug = ?";  $params[] = $category; }
+    if ($brand)    { $where[] = "b.slug = ?";  $params[] = $brand; }
+    if ($q)        { $where[] = "(p.name LIKE ? OR p.description LIKE ? OR c.name LIKE ? OR b.name LIKE ?)";
+                     $s = "%$q%"; $params = array_merge($params, [$s,$s,$s,$s]); }
+    if ($price_min > 0) { $where[] = "p.price >= ?"; $params[] = $price_min; }
+    if ($price_max > 0) { $where[] = "p.price <= ?"; $params[] = $price_max; }
+    if ($min_rating > 0){ $where[] = "p.rating_avg >= ?"; $params[] = $min_rating; }
+    if ($in_stock)  { $where[] = "p.stock > 0"; }
+    if ($on_sale)   { $where[] = "p.original_price > p.price AND p.original_price IS NOT NULL"; }
+    if ($featured)  { $where[] = "p.is_featured = 1"; }
 
     $whereStr = implode(' AND ', $where);
-    $orderBy = match($sort) {
-        'price_asc' => 'p.price ASC',
+    $orderBy  = match($sort) {
+        'price_asc'  => 'p.price ASC',
         'price_desc' => 'p.price DESC',
-        'rating' => 'p.rating_avg DESC',
-        'popular' => 'p.total_sold DESC',
-        default => 'p.created_at DESC'
+        'rating'     => 'p.rating_avg DESC',
+        'popular'    => 'p.total_sold DESC',
+        default      => 'p.created_at DESC'
     };
 
-    $countStmt = $pdo->prepare("SELECT COUNT(*) FROM products p LEFT JOIN categories c ON p.category_id = c.id LEFT JOIN brands b ON p.brand_id = b.id WHERE $whereStr");
-    $countStmt->execute($params);
-    $total = $countStmt->fetchColumn();
+    // Count
+    $cStmt = $pdo->prepare(
+        "SELECT COUNT(*) FROM products p
+         LEFT JOIN categories c ON p.category_id = c.id
+         LEFT JOIN brands     b ON p.brand_id     = b.id
+         WHERE $whereStr"
+    );
+    $cStmt->execute($params);
+    $total = $cStmt->fetchColumn();
 
-    $params[] = $limit;
-    $params[] = $offset;
-    $stmt = $pdo->prepare("SELECT p.*, c.name as category_name, b.name as brand_name,
-        (SELECT image_path FROM product_images WHERE product_id = p.id AND is_primary = 1 LIMIT 1) as primary_image
-        FROM products p
-        LEFT JOIN categories c ON p.category_id = c.id
-        LEFT JOIN brands b ON p.brand_id = b.id
-        WHERE $whereStr ORDER BY $orderBy LIMIT ? OFFSET ?");
-    $stmt->execute($params);
-    $products = $stmt->fetchAll();
+    // Fetch
+    $fetchParams = array_merge($params, [$limit, $offset]);
+    $stmt = $pdo->prepare(
+        "SELECT p.*, c.name as category_name, b.name as brand_name,
+         (SELECT image_path FROM product_images WHERE product_id = p.id AND is_primary = 1 LIMIT 1) as primary_image
+         FROM products p
+         LEFT JOIN categories c ON p.category_id = c.id
+         LEFT JOIN brands     b ON p.brand_id     = b.id
+         WHERE $whereStr
+         ORDER BY $orderBy
+         LIMIT ? OFFSET ?"
+    );
+    $stmt->execute($fetchParams);
 
-    jsonResponse(['success' => true, 'products' => $products, 'total' => $total, 'pages' => ceil($total / $limit), 'page' => $page]);
+    jsonResponse([
+        'success'  => true,
+        'products' => $stmt->fetchAll(),
+        'total'    => $total,
+        'pages'    => ceil($total / $limit),
+        'page'     => $page
+    ]);
 }
 
 function handleGetProduct() {
@@ -827,11 +858,35 @@ function handleAdminUpdateOrder() {
     if (!$order) jsonResponse(['success' => false, 'message' => 'Order not found.']);
 
     if ($status === 'approved' && $order['order_status'] !== 'approved') {
+        // Reserve/deduct stock when admin approves the order
         $items = $pdo->prepare("SELECT * FROM order_items WHERE order_id = ?");
         $items->execute([$id]);
         foreach ($items->fetchAll() as $item) {
-            $pdo->prepare("UPDATE products SET stock = GREATEST(0, stock - ?), total_sold = total_sold + ? WHERE id = ?")
-                ->execute([$item['quantity'], $item['quantity'], $item['product_id']]);
+            $pdo->prepare(
+                "UPDATE products SET stock = GREATEST(0, stock - ?) WHERE id = ?"
+            )->execute([$item['quantity'], $item['product_id']]);
+        }
+    }
+
+    if ($status === 'delivered' && $order['order_status'] !== 'delivered') {
+        // Increment total_sold counter when order is marked delivered
+        $items = $pdo->prepare("SELECT * FROM order_items WHERE order_id = ?");
+        $items->execute([$id]);
+        foreach ($items->fetchAll() as $item) {
+            $pdo->prepare(
+                "UPDATE products SET total_sold = total_sold + ? WHERE id = ?"
+            )->execute([$item['quantity'], $item['product_id']]);
+        }
+    }
+
+    // Prevent double-deduction if order is cancelled after being approved
+    if ($status === 'cancelled' && in_array($order['order_status'], ['approved', 'shipped', 'delivered'])) {
+        $items = $pdo->prepare("SELECT * FROM order_items WHERE order_id = ?");
+        $items->execute([$id]);
+        foreach ($items->fetchAll() as $item) {
+            $pdo->prepare(
+                "UPDATE products SET stock = stock + ? WHERE id = ?"
+            )->execute([$item['quantity'], $item['product_id']]);
         }
     }
 
@@ -954,4 +1009,67 @@ function handleAdminApproveReview() {
     $pdo = getDB();
     $pdo->prepare("UPDATE reviews SET is_approved = ? WHERE id = ?")->execute([$approved, $id]);
     jsonResponse(['success' => true]);
+}
+
+// ===================== BUY NOW =====================
+function handlePlaceOrderBuyNow() {
+    requireLogin();
+    $pdo = getDB();
+
+    $product_id = intval($_POST['product_id'] ?? 0);
+    $quantity   = max(1, intval($_POST['quantity'] ?? 1));
+
+    if (!$product_id) jsonResponse(['success' => false, 'message' => 'Invalid product.']);
+
+    // Fetch product
+    $stmt = $pdo->prepare("SELECT * FROM products WHERE id = ? AND is_active = 1");
+    $stmt->execute([$product_id]);
+    $product = $stmt->fetch();
+    if (!$product) jsonResponse(['success' => false, 'message' => 'Product not found.']);
+    if ($quantity > $product['stock']) jsonResponse(['success' => false, 'message' => 'Not enough stock available.']);
+
+    $subtotal = $product['price'] * $quantity;
+    $total    = $subtotal;
+
+    $payment_method    = $_POST['payment_method']    ?? 'cod';
+    $notes             = sanitize($_POST['notes']    ?? '');
+    $shipping_name     = sanitize($_POST['shipping_name']     ?? '');
+    $shipping_phone    = sanitize($_POST['shipping_phone']    ?? '');
+    $shipping_address  = sanitize($_POST['shipping_address']  ?? '');
+    $shipping_city     = sanitize($_POST['shipping_city']     ?? '');
+    $shipping_province = sanitize($_POST['shipping_province'] ?? '');
+    $shipping_zip      = sanitize($_POST['shipping_zip']      ?? '');
+
+    $order_number = generateOrderNumber();
+
+    $pdo->beginTransaction();
+    try {
+        $pdo->prepare(
+            "INSERT INTO orders (order_number, user_id, subtotal, discount_amount, total,
+             payment_method, notes, shipping_name, shipping_phone,
+             shipping_address, shipping_city, shipping_province, shipping_zip)
+             VALUES (?,?,?,0,?,?,?,?,?,?,?,?,?)"
+        )->execute([
+            $order_number, $_SESSION['user_id'], $subtotal, $total,
+            $payment_method, $notes,
+            $shipping_name, $shipping_phone,
+            $shipping_address, $shipping_city, $shipping_province, $shipping_zip
+        ]);
+        $order_id = $pdo->lastInsertId();
+
+        $pdo->prepare(
+            "INSERT INTO order_items (order_id, product_id, product_name, price, quantity, subtotal)
+             VALUES (?,?,?,?,?,?)"
+        )->execute([
+            $order_id, $product_id, $product['name'],
+            $product['price'], $quantity, $subtotal
+        ]);
+
+        // NOTE: stock is deducted on "approved" status (see Fix 5) — not here
+        $pdo->commit();
+        jsonResponse(['success' => true, 'order_number' => $order_number, 'order_id' => $order_id]);
+    } catch (Exception $e) {
+        $pdo->rollBack();
+        jsonResponse(['success' => false, 'message' => 'Order failed. Please try again.']);
+    }
 }
