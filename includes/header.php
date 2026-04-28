@@ -1,6 +1,7 @@
 <?php
 // includes/header.php — shared across all pages
 ?>
+<!-- ============ HEADER ============ -->
 <header id="header">
   <nav class="nav-wrap">
     <a href="/nexus-gear/index.php" class="logo">
@@ -8,8 +9,9 @@
       <span class="logo-text"><span class="logo-accent">NEXUS</span> GEAR</span>
     </a>
 
+    <!-- Desktop nav links (hidden on mobile) -->
     <ul class="nav-links">
-      <li><a href="/nexus-gear/index.php">Home</a></li>
+      <li><a href="/nexus-gear/index.php" class="active">Home</a></li>
       <li class="nav-dropdown">
         <a href="/nexus-gear/shop.php">Shop</a>
         <div class="dropdown-menu">
@@ -28,24 +30,47 @@
       <li><a href="/nexus-gear/shop.php?sale=1">Sale</a></li>
     </ul>
 
-    <div class="search-wrapper">
-      <svg class="search-icon" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-      <input type="text" id="searchInput" class="search-input" placeholder="Search phones, laptops, gear...">
-      <div id="searchResults" class="search-results hidden"></div>
-    </div>
-
     <div class="nav-actions">
-      <button class="nav-icon-btn" onclick="window.location='/nexus-gear/wishlist.php'" id="wishlistBtn" title="Wishlist">
+      <!-- Search icon → expands panel -->
+<div class="search-wrapper">
+  <!-- Desktop: always-visible bar -->
+  <div class="search-bar-desktop">
+    <svg class="search-icon" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input id="searchInput" placeholder="Search products, brands...">
+  </div>
+  <!-- Mobile: icon toggle -->
+  <button class="search-icon-btn" id="searchToggleBtn">
+    <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+  </button>
+  <!-- Shared dropdown results -->
+  <div class="search-panel" id="searchPanel">
+    <!-- Mobile only: input inside panel -->
+    <div class="search-panel-inner" style="display:none" id="mobilePanelInput">
+      <svg class="search-icon" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input class="search-input" id="mobileSearchPanelInput" placeholder="Search products...">
+    </div>
+    <div class="search-results" id="searchResults"></div>
+  </div>
+</div>
+
+      <!-- Wishlist -->
+      <button type="button" class="nav-icon-btn" onclick="window.location='/nexus-gear/wishlist.php'" id="wishlistBtn" title="Wishlist">
         <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
       </button>
-      <button class="nav-icon-btn" id="cartBtn" title="Cart">
+
+      <!-- Cart -->
+      <button type="button" class="nav-icon-btn" id="cartBtn" title="Cart">
         <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
         <span class="badge hidden" id="cartBadge">0</span>
       </button>
+
+      <!-- Auth Buttons (desktop) -->
       <div id="authBtns" class="flex gap-2">
         <button class="btn btn-outline btn-sm" data-open-auth="login">Sign In</button>
         <button class="btn btn-primary btn-sm" data-open-auth="register">Join Now</button>
       </div>
+
+      <!-- User Menu -->
       <div class="user-menu hidden" id="userMenu">
         <img src="/nexus-gear/images/default-avatar.png" alt="User" class="user-avatar" id="userAvatarBtn">
         <div class="user-dropdown" id="userDropdown">
@@ -60,6 +85,11 @@
           <button class="logout-btn"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg> Sign Out</button>
         </div>
       </div>
+
+      <!-- Hamburger (mobile only) -->
+      <button type="button" class="hamburger" id="hamburgerBtn" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
     </div>
   </nav>
 </header>
