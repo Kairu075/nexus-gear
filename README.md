@@ -1,4 +1,4 @@
-# Nexus Gear — Full-Stack Online Gadget Store
+# Nexus Gear: Full-Stack Online Gadget Store
 
 ## Tech Stack
 - **Backend**: PHP 8+ with PDO (MySQL)
@@ -105,7 +105,7 @@ nexus-gear/
 
 ---
 
-## Discount Codes (Seeded)
+## Discount Codes
 | Code | Type | Value | Min Order |
 |------|------|-------|-----------|
 | NEXUS10 | % | 10% | ₱500 |
