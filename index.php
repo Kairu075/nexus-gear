@@ -185,11 +185,11 @@ $pageTitle = 'Nexus Gear';
       </div>
       <div class="hero-stats">
         <div>
-          <div class="hero-stat-value">500+</div>
+          <div class="hero-stat-value">100+</div>
           <div class="hero-stat-label">Products</div>
         </div>
         <div>
-          <div class="hero-stat-value">12K+</div>
+          <div class="hero-stat-value">10K+</div>
           <div class="hero-stat-label">Customers</div>
         </div>
         <div>
@@ -405,10 +405,10 @@ $pageTitle = 'Nexus Gear';
         </a>
         <p>Your trusted destination for premium tech and gadgets in the Philippines. Authentic products, competitive prices, and exceptional service.</p>
         <div class="footer-social" style="margin-top:20px">
-          <a href="#" class="social-btn" title="Facebook">f</a>
-          <a href="#" class="social-btn" title="Instagram">in</a>
-          <a href="#" class="social-btn" title="TikTok">tk</a>
-          <a href="#" class="social-btn" title="YouTube">yt</a>
+          <a href="https://www.facebook.com/Kairuux" class="social-btn" title="Facebook">fb</a>
+          <a href="https://www.instagram.com/k4iruu/" class="social-btn" title="Instagram">ins</a>
+          <a href="https://www.tiktok.com/@kai.ru_" class="social-btn" title="TikTok">tk</a>
+          <a href="https://www.youtube.com/@kairuux" class="social-btn" title="YouTube">yt</a>
         </div>
       </div>
       <div>

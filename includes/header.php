@@ -92,4 +92,35 @@
       </button>
     </div>
   </nav>
+
+  <!-- Mobile nav drawer -->
+  <div class="mobile-nav" id="mobileNav">
+    <div class="mobile-search">
+      <svg width="16" height="16" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input type="text" id="mobileSearchInput" placeholder="Search products..." autocomplete="off">
+    </div>
+    <div id="mobileSearchResults"></div>
+    <div class="mobile-nav-section">Navigation</div>
+    <a href="/nexus-gear/index.php">Home</a>
+    <a href="/nexus-gear/shop.php">All Products</a>
+    <a href="/nexus-gear/shop.php?category=smartphones">Smartphones</a>
+    <a href="/nexus-gear/shop.php?category=laptops">Laptops</a>
+    <a href="/nexus-gear/shop.php?category=desktop-pcs">Desktop PCs</a>
+    <a href="/nexus-gear/shop.php?category=gaming-peripherals">Gaming</a>
+    <a href="/nexus-gear/shop.php?category=pc-parts">PC Parts</a>
+    <a href="/nexus-gear/shop.php?sort=popular">Best Sellers</a>
+    <a href="/nexus-gear/shop.php?sale=1">Sale</a>
+    <div class="mobile-nav-section" id="mobileAuthSection">Account</div>
+    <div id="mobileAuthLinks">
+      <button class="btn btn-primary" style="width:100%;justify-content:center;margin:8px 0" data-open-auth="login" onclick="closeMenu()">Sign In</button>
+      <button class="btn btn-outline" style="width:100%;justify-content:center;border-color:rgba(255,255,255,.2);color:#fff" data-open-auth="register" onclick="closeMenu()">Create Account</button>
+    </div>
+    <div id="mobileUserLinks" class="hidden" style="display:flex;flex-direction:column;gap:0">
+      <a href="/nexus-gear/profile.php" onclick="closeMenu()">My Profile</a>
+      <a href="/nexus-gear/orders.php" onclick="closeMenu()">My Orders</a>
+      <a href="/nexus-gear/wishlist.php" onclick="closeMenu()">Wishlist</a>
+      <a href="/nexus-gear/admin/index.php" class="mobile-admin-link hidden" onclick="closeMenu()">Admin Panel</a>
+      <button class="logout-btn" style="padding:14px 16px;border-radius:10px;font-size:16px;font-weight:600;color:#ff6677;border-bottom:1px solid var(--border-nav)" onclick="closeMenu()">Sign Out</button>
+    </div>
+  </div>
 </header>
