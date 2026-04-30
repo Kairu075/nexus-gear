@@ -571,12 +571,7 @@ async function saveProduct() {
   }
 }
 
-// ── IMAGE GRID (FIXED) ─────────────────────────────────────────────────────
-// Key fixes vs original:
-//   1. Tile wrapper gets class="img-tile" so closest('.img-tile') works reliably
-//   2. deleteProductImage(event, imageId) — event is passed explicitly, not relied on as global
-//   3. setPrimaryImage(event, imageId, pid) — event passed explicitly; pid is a concrete
-//      integer rendered into the onclick string so it's never "undefined"
+
 
 async function refreshProductImagesGrid(slugOrId) {
   const grid = document.getElementById('productImagesGrid');

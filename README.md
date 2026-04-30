@@ -1,4 +1,5 @@
 # Nexus Gear: Full-Stack Online Gadget Store
+# visit site here: [Nexus Gear](https://nexusgear.great-site.net/)
 
 ## Tech Stack
 - **Backend**: PHP 8+ with PDO (MySQL)
